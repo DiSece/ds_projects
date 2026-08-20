@@ -1,0 +1,157 @@
+---
+title: "seth_dice_4.2"
+author: "Seth Dice"
+date: "2025-06-29"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = FALSE}
+# Assignment: 4.2 Assignment
+# Name: Dice, Seth
+# Date: 2025-06-29
+
+suppressMessages(library(ggplot2))
+suppressMessages(library(openxlsx))
+suppressMessages(library(tidyverse))
+suppressMessages(library(lubridate))
+suppressMessages(library(cluster))
+suppressMessages(library(factoextra))
+suppressMessages(library(ggfortify))
+
+setwd(
+  paste0(
+  "C:\\Users\\sethd\\OneDrive\\Desktop\\MS in Data Science Bellevue",
+  "\\Classes\\DSC 630-T301 Predictive Analytics\\Week 4"
+  ))
+
+# Import ALS data
+als_data <- read.csv("als_data.csv")
+
+```
+
+# Remove any data that is not relevant to the patient’s ALS condition.
+
+Displaying column names from dataset to review which columns are not relevant to
+a patient's ALS condition.
+
+```{r, echo = FALSE}
+
+# Show column names from dataset to determine which columns to remove
+colnames(als_data)
+
+## Using google to determine if the column is important for ALS
+## Columns deemed not important - ID, Age_mean, Gender_mean, SubjectID.
+## Age and gender are not important factors in ALS condition and ID/SubjectID
+## are IDs given to the patients and not relevant to their ALS condition
+
+als_data <- als_data %>%
+  select(
+    -ID, -Age_mean, -Gender_mean, -SubjectID
+  )
+
+```
+
+The columns that are deemed not important to ALS condition per Google resources:
+
+* ID - Column ID given to patient
+* SubjectID - Column ID given to subject
+* Age_mean - Age is not relevant factor in ALS condition
+* Gender_mean - Gender is not relevant factor in ALS condition
+
+# Apply a standard scalar to the data.
+
+```{r, echo = FALSE}
+
+# Using scale() to apply standard scalar to data
+als_data_scalar <- scale(als_data)
+
+```
+
+Used R-function scale() to apply standard scalar to ALS data.
+
+# Create a plot of the cluster silhouette score versus the number of clusters in a K-means cluster.
+
+```{r, echo = FALSE}
+
+# Creating function to compute average silhouette for k clusters
+avg_sil <- function(k) {
+  km <- kmeans(als_data_scalar, centers = k, nstart = 25) # K-means clustering
+  ss <- silhouette(km$cluster, dist(als_data_scalar)) # Calculating silhouette scores
+  mean(ss[, 3]) # Returning average silhouette scores
+}
+
+# Compute and plot k-means 2 through 15
+k_val <- 2:15
+
+# Extract average silhouette for 2-15 clusters
+avg_sil_values <- suppressWarnings(map_dbl(k_val, avg_sil))
+
+# Using function fviz_nbclust to plot optimum number of clusters
+fviz_nbclust(als_data_scalar, kmeans, method = "silhouette")
+
+```
+
+# Use the plot created in (3) to choose an optimal number of clusters for K-means. Justify your choice.
+
+The Average Silhouette Method determines how well each value lies within its cluster.
+High average silhouette width indicates a good clustering, so from plot created in
+(3) we'd want the number of clusters with the highest average silhouette width.
+The highest average silhouette width is where number of clusters = 2.
+
+# Fit a K-means model to the data with the optimal number of clusters chosen in part (4).
+
+```{r, echo = FALSE}
+
+## Fitting K-means model to data using 2 clusters
+k2 <- kmeans(als_data_scalar, centers = 2, nstart = 25)
+
+## Using fviz_cluster to visualize K-means model
+fviz_cluster(k2, data = als_data_scalar)
+
+```
+
+# Fit a PCA transformation with two features to the scaled data.
+
+```{r, echo = FALSE}
+
+# Using leg/hands_range as my two features
+# Fitting PCA transformation to two features and scaling data in process
+pca_als <- prcomp(als_data[, c("leg_range", "hands_range")], center = TRUE, scale = TRUE)
+
+```
+
+The two features used from ALS data are: leg_range, hands_range
+
+# Make a scatterplot of the PCA transformed data coloring each point by its cluster value.
+
+```{r, echo = FALSE}
+
+# Using 2 clusters as this value has been confirmed earlier in script
+num_clusters <- 2
+
+# Perform kmeans() on the pca_als to highlight clusters in graph
+cluster_res <- kmeans(pca_als$x[, 1:2], centers = num_clusters)
+
+# Adding the cluster_res to ALS dataframe as factor
+als_data$cluster <- as.factor(cluster_res$cluster)
+
+# Plot the PCA results, coloring by cluster
+autoplot(pca_als, data = als_data, colour = 'cluster', shape = 'cluster', frame = TRUE)
+
+```
+
+# Summarize your results and make a conclusion.
+
+After importing the ALS data and reviewing the columns the features removed were
+ID, SubjectID, Age_mean, and Gender_mean as Google research was not showing these
+as relevant to a patient's ALS condition. Once columns removed and scalar applied
+the optimal number of clusters selected was 2 when using the average silhouette method.
+A K-means model was then fitted with k = 2, and a PCA transformation was applied using
+two features chosen at random: leg_range and hand_range which is shown as a scatterplot.
+The K-means clustering graph shows the first cluster having a wider range of values
+when compared to the second cluster. The PCA scatterplot has vectors pointing in the 
+same direction which would give a positive correlation to leg_range and hands_range.
