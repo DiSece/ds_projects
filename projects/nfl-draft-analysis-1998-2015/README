@@ -1,0 +1,14 @@
+Project Title: nfl_draft_analysis_1998_2015.ipynb
+Description: Analyzing NFL drafting data from 1998-2015 reviewing location, region, age, income, and other details of the
+draftees. Includes analysis and visualizations. Data imported from data_import includes superbowl data of draftees, 
+nfl draft data, and state gdp.
+Requirements:
+Must have python packages-
+pandas
+numpy
+matplotlib.pyplot
+sqlite3
+csv
+sqlalchemy
+Must also have ability to open Jupyter notebooks and Excel installed.
+Quick Start: Click on .ipynb file to open, update folder location to point to where your dat_import is and run in your notebook.
