@@ -1,0 +1,4 @@
+Project Title: Childcare Costs YoY Analysis
+Description: Analyzing childcare costs year-over-year from years 2008-2018 using national database of childcare prices.
+Requirements: Must have Excel, PDF, and R to import/view/run project.
+Quick Start: Open R and after having updated the location of data_import to your folder run as-is to generate data and visualizations.
