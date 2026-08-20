@@ -1,0 +1,141 @@
+---
+title: "seth_dice_8.2"
+author: "Seth Dice"
+date: "2025-07-27"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = FALSE}
+
+options(scipen = 999)
+options(warn = -1)
+
+# Assignment: 8.2 Assignment
+# Name: Dice, Seth
+# Date: 2025-07-27
+
+suppressMessages(library(ggplot2))
+suppressMessages(library(openxlsx))
+suppressMessages(library(tidyverse))
+suppressMessages(library(lubridate))
+suppressMessages(library(forecast))
+
+# Data Cleaning -----------------------------------------------------------
+setwd(paste0(
+  "C:\\Users\\sethd\\OneDrive\\Desktop\\MS in Data Science Bellevue",
+  "\\Classes\\DSC 630-T301 Predictive Analytics\\Week 8")
+)
+
+# Read in data of us retail sales
+# total monthly retail sales in the US from January 1992 until June 2021
+df_sales <- read.csv("us_retail_sales.csv")
+
+```
+
+# Plot the data with proper labeling and make some observations on the graph.
+
+```{r, echo = FALSE}
+
+# Pivoting data to make it easier to plot
+df_pivot <- pivot_longer(
+  df_sales,
+  cols = c(2:13)
+) %>%
+  rename("MONTH" = name, "SALES" = value)
+
+# Basic time series plot / view just numbers
+ggplot(df_pivot, aes(x = YEAR, y = SALES)) +
+  geom_line() +
+  labs(x = "Years (1992 - 2021)", y = "Sales ($)") +
+  theme_minimal()
+
+# Creating custom order for months so legend is in correct order
+df_pivot$MONTH <- factor(df_pivot$MONTH, levels = c(
+  "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+  "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+))
+
+## Plotting graph showing sales over time / factor of months
+ggplot(data = df_pivot, aes(x = YEAR, y = SALES)) +
+  geom_line(aes(colour = MONTH)) +
+  scale_x_continuous(breaks = seq(1992, 2021, by = 1)) +
+  labs(x = "Years (1992 - 2021)", y = "Sales ($)") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+
+Looking at the time series graphs plotted we can see dips for the years 2007-2008
+and 2020. The 2007-2008 dip can be explained by the market crash in '08. To explain
+the drop in 2020 we have to view the data split by months and we can see the 2020
+dip started in April which would mark the closure of a lot of businesses in the US
+due to COVID.
+
+# Split this data into a training and test set. Use the last year of data (July 2020 – June 2021) of data as your test set and the rest as your training set.
+
+```{r, echo = FALSE}
+
+# Training set
+df_training <- df_pivot %>%
+  filter(
+    YEAR == "2020" & MONTH %in% c("JAN", "FEB", "MAR", "APR", "MAY", "JUN") |
+      YEAR < "2020"
+  )
+
+# create time series training data
+training_ts <- ts(df_training$SALES, frequency = 12, start = c(1992, 1))
+
+# Test set
+df_test <- df_pivot %>%
+  filter(
+    YEAR == "2021" & !is.na(SALES) |
+      YEAR == "2020" & MONTH %in% c("JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
+      )
+
+# create time series training data
+test_ts <- ts(df_test$SALES, frequency = 12, start = c(2020, 7))
+
+```
+
+# Use the training set to build a predictive model for the monthly retail sales.
+
+```{r, echo = FALSE}
+
+# Using auto.arima() to have R pick correct specification
+auto_arim_model = auto.arima(training_ts)
+
+# Showing output of specifications
+auto_arim_model
+
+```
+
+# Use the model to predict the monthly retail sales on the last year of data.
+
+```{r, echo = FALSE}
+
+# Predicting monthly sales for last year of data
+forecast_values <- forecast(auto_arim_model, h = length(test_ts))
+
+forecast_values
+
+```
+
+# Report the RMSE of the model predictions on the test set.
+
+```{r, echo = FALSE}
+
+model_rmse <- round(sqrt(mean((forecast_values$mean - test_ts) ^ 2)))
+paste0("The RMSE of model predictions on test set: ", model_rmse)
+
+```
+
+
+
+
+
+
+
+
