@@ -1,4 +1,4 @@
-Project Title: nfl_draft_analysis_1998_2015.ipynb
+Project Title: NFL Draft Analysis (1998-2015)
 Description: Analyzing NFL drafting data from 1998-2015 reviewing location, region, age, income, and other details of the
 draftees. Includes analysis and visualizations. Data imported from data_import includes superbowl data of draftees, 
 nfl draft data, and state gdp.
