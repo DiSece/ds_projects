@@ -3,4 +3,5 @@ Description: Using API to retrieve weather in Celisus, Fahrenheit, and Kelvin wi
 provides details on temperature feel, temperature min/max, pressure, and humidity.
 Requirements: Must have API key from http://api.openweathermap.org and review requirements if wanting to create/modify API.
 Must also have python.
+Must have 'requests' python library.
 Quick Start: When having API, open .py file and update the 'api_key' variable with your own API key then run as-is.
