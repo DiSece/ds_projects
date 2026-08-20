@@ -1,0 +1,37 @@
+sb_winner,score,sb_team,sb_team_city,year,state_code,team_code,state_region
+N,24,Packers,Green Bay,1998,WI,GNB,Midwest
+Y,31,Broncos,Denver,1998,CO,DEN,West
+Y,34,Broncos,Denver,1999,CO,DEN,West
+N,19,Falcons,Atlanta,1999,GA,ATL,South
+Y,23,Rams,St. Louis,2000,MO,STL,South
+N,16,Titans,Tennessee,2000,TN,TN,South
+N,7,Giants,New York,2001,NY,NYG,Middle Atlantic
+Y,34,Ravens,Baltimore,2001,MD,BAL,Middle Atlantic
+Y,20,Patriots,New England,2002,MA,NWE,New England
+N,17,Rams,St. Louis,2002,MO,STL,South
+Y,48,Buccaneers,Tampa Bay,2003,FL,TAM,South
+N,21,Raiders,Oakland,2003,CA,OAK,West
+Y,32,Patriots,New England,2004,MA,NWE,New England
+N,29,Panthers,Carolina,2004,NC,CAR,South
+N,21,Eagles,Philadelphia,2005,PA,PHI,Middle Atlantic
+Y,24,Patriots,New England,2005,MA,NWE,New England
+Y,21,Steelers,Pittsburgh,2006,PA,PIT,Middle Atlantic
+N,10,Seahawks,Seattle,2006,WA,SEA,West
+N,17,Bears,Chicago,2007,IL,CHI,Midwest
+Y,29,Colts,Indianapolis,2007,IN,IND,Midwest
+N,14,Patriots,New England,2008,MA,NWE,New England
+Y,17,Giants,New York,2008,NY,NYG,Middle Atlantic
+N,23,Cardinals,Arizona,2009,AZ,ARI,Southwest
+Y,27,Steelers,Pittsburgh,2009,PA,PIT,Middle Atlantic
+N,17,Colts,Indianapolis,2010,IN,IND,Midwest
+Y,31,Saints,New Orleans,2010,LA,NOR,South
+Y,31,Packers,Green Bay,2011,WI,GNB,Midwest
+N,25,Steelers,Pittsburgh,2011,PA,PIT,Middle Atlantic
+N,17,Patriots,New England,2012,MA,NWE,New England
+Y,21,Giants,New York,2012,NY,NYG,Middle Atlantic
+N,31,49ers,San Francisco,2013,CA,SFO,West
+Y,34,Ravens,Baltimore,2013,MD,BAL,Middle Atlantic
+N,8,Broncos,Denver,2014,CO,DEN,West
+Y,43,Seahawks,Seattle,2014,WA,SEA,West
+N,24,Seahawks,Seattle,2015,WA,SEA,West
+Y,28,Patriots,New England,2015,MA,NWE,New England
