@@ -1,0 +1,5 @@
+Project Title: Diabetes Features Ranked
+Description: Ranking the features that correlate most with patients and positive diabetes diagnoses. 
+Requirements: Must have R, Excel, and PowerPoint.
+Quick Start: Open the .Rmd file and after updating the location for data_import run script as-is to generate output file
+for viewing.
