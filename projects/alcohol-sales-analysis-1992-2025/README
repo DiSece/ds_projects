@@ -1,0 +1,4 @@
+Project Title: Alcohol Sales Analysis 1992-2025
+Description: Using monthly alcohol sales data of the United States in years 1992-2025 data provided by the Federal Reserve Economic Data. Analysis is to show alcohol sales trends throughout time.
+Requirements: Must have Excel, PDF, and ability to run R code.
+Quick Start: Open your R IDE and run code as-is after updating data_import to be your location.
