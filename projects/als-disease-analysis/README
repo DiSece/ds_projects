@@ -1,0 +1,4 @@
+Project Title: ALS Disease Analysis
+Description: Using k-means clustering on ALS patient data to find which features are grouped together in ALS patients in effort to predict disease in a given population.
+Requirements: Must have Excel, PDF, and R to run the code.
+Quick Start: Open R IDE and after updating the file location for data_import run script as-is to generate report.
