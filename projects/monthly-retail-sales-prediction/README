@@ -1,0 +1,4 @@
+Project Title: Monthly Retail Sales Prediction 1992-2021
+Description: Using monthly retail sales numbers of the United States for years 1992-2021 to forecast future month profit and growth potential.
+Requirements: Must have Excel, PDF viewer, and R to run R code.
+Quick Start: Open R IDE and after updating folder location to data_import run script as-is to generate report.
