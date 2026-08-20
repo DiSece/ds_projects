@@ -1,4 +1,4 @@
-Project Title: api_weather_and_location.py
+Project Title: Weather and Location Look-up
 Description: Using API to retrieve weather in Celisus, Fahrenheit, and Kelvin with location in latitude and longitude. Also
 provides details on temperature feel, temperature min/max, pressure, and humidity.
 Requirements: Must have API key from http://api.openweathermap.org and review requirements if wanting to create/modify API.
