@@ -1,0 +1,6 @@
+Project Title: fbi_violence_analysis.pdf
+Description: Analysis of different violence types commmited throughout the U.S. during years 2015-2019 tracked by FBI.
+Script fbi_violence_code.Rmd is markdown file that imports excel files from data_files to be used to generate PDF.
+Requirements: PDF viewer, R, Excel
+Quick Start: Place data_files folder in location, update .Rmd file to import from location and run script to generate PDF.
+Data is static, so will only generate the report that is found as fbi_violence.analysis.pdf
