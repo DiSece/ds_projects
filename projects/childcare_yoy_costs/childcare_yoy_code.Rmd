@@ -1,0 +1,282 @@
+---
+title: "seth_dice_milestone_5"
+output: pdf_document
+date: "2025-11-23"
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r, echo = FALSE, include = FALSE}
+
+options(warn = -1)
+
+suppressMessages(library(ggplot2))
+suppressMessages(library(openxlsx))
+suppressMessages(library(tidyverse))
+suppressMessages(library(lubridate))
+suppressMessages(library(readxl))
+suppressMessages(library(patchwork))
+
+setwd("C:\\Users\\sethd\\OneDrive\\Desktop\\MS in Data Science Bellevue\\Classes\\DSC 640-T302 Data Presentation Visualization\\term project")
+# Data Import -------------------------------------------------------------
+
+ndbcc <- read.xlsx("nationaldatabaseofchildcareprices.xlsx")
+
+# Selecting columns to use for data analysis and visuals
+ndbcc_mod <- ndbcc %>%
+  select(
+    State_Name, State_Abbreviation, County_Name,
+    StudyYear, PR_F, PR_P, MCInfant, MCToddler, MCPreschool
+    ) %>%
+  # Renaming codes to make more sense when viewing
+  rename(
+    poverty_rate_families = PR_F,
+    poverty_rate_people = PR_P,
+    median_pr_infant = MCInfant,
+    median_pr_toddler = MCToddler,
+    median_pr_preschool = MCPreschool
+  )
+
+```
+
+# Visualizations Used
+
+## Average Price of Childcare for Infants, Toddlers, and Preschool Aged Children
+
+```{r, echo = FALSE}
+
+# Visuals -----------------------------------------------------------------
+
+# Creating average price of childcare for infant, toddler, and preschool
+# costs to show the rise through the years
+vis_1 <- ndbcc_mod %>%
+  group_by(
+    StudyYear
+  ) %>%
+  mutate(
+    mean_pr_infant = mean(median_pr_infant, na.rm = TRUE),
+    mean_pr_toddler = mean(median_pr_toddler, na.rm = TRUE),
+    mean_pr_preschool = mean(median_pr_preschool, na.rm = TRUE)
+  ) %>%
+  ungroup() %>%
+  select(
+    StudyYear,
+    mean_pr_infant,
+    mean_pr_toddler,
+    mean_pr_preschool
+  ) %>%
+  unique()
+
+# Plotting chart
+ggplot(vis_1, aes(StudyYear)) + 
+  geom_line(aes(y = mean_pr_infant, colour = "Infant")) + 
+  geom_line(aes(y = mean_pr_toddler, colour = "Toddler")) + 
+  geom_line(aes(y = mean_pr_preschool, colour = "Preschool")) +
+  scale_x_continuous(breaks = 2008:2018) +
+  labs(
+    colour = "Mean Price",
+    title = "Mean Price of Child Center-based Care in United States (2008 - 2018)",
+    x = "Study Year",
+    y = "Mean Price ($)"
+  )
+
+```
+
+## Mean Prices by State
+
+```{r, echo = FALSE}
+
+# Showing the mean prices by state
+vis_2 <- ndbcc_mod %>%
+  group_by(
+    State_Abbreviation
+  ) %>%
+  mutate(
+    mean_pr_infant_state = mean(median_pr_infant, na.rm = TRUE),
+    mean_pr_toddler_state = mean(median_pr_toddler, na.rm = TRUE),
+    mean_pr_preschool_state = mean(median_pr_preschool, na.rm = TRUE)
+  ) %>%
+  select(
+    State_Abbreviation,
+    mean_pr_infant_state,
+    mean_pr_toddler_state,
+    mean_pr_preschool_state
+  ) %>%
+  unique() %>%
+  filter(
+    mean_pr_infant_state != "NaN" & mean_pr_toddler_state != "NaN" & 
+      mean_pr_preschool_state != "NaN"
+  ) %>%
+  mutate(
+    total_child_costs = sum(mean_pr_infant_state, mean_pr_toddler_state, mean_pr_preschool_state)
+  )
+
+# Plotting chart
+ggplot(vis_2, aes(x = reorder(State_Abbreviation, -total_child_costs), y = total_child_costs)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Total Mean of Child Center-based Care by States (2008 - 2018)",
+    x = "State Abbreviation",
+    y = "Total Mean Costs ($)"
+  ) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+
+## Texas County Drill-down
+
+```{r, echo = FALSE}
+
+# Showing breakdown by county of Texas
+# Breakdown by county is preview for what users can expect when access to PowerBI
+# is granted. Cannot attach PowerBI to submission for project, so has been excluded
+# but URL can be granted to users who request PowerBI access
+vis_3 <- ndbcc_mod %>%
+  filter(State_Abbreviation == "TX") %>%
+  group_by(
+    County_Name
+  ) %>%
+  mutate(
+    mean_pr_infant_county = mean(median_pr_infant, na.rm = TRUE),
+    mean_pr_toddler_county = mean(median_pr_toddler, na.rm = TRUE),
+    mean_pr_preschool_county = mean(median_pr_preschool, na.rm = TRUE)
+  ) %>%
+  mutate(
+    total_child_costs_county = sum(mean_pr_infant_county, mean_pr_toddler_county, mean_pr_preschool_county)
+  ) %>%
+  ungroup() %>%
+  select(total_child_costs_county) %>%
+  unique()
+
+# Due to amount of counties and pricing being based by county, only taking unique
+# values and PowerBI option (for those that request it) will have counties as
+# a drill-down option
+vis_3$county_rank <- NA
+vis_3$county_rank[order(-vis_3$total_child_costs_county)] <- 1:nrow(vis_3)
+
+# Plotting chart
+ggplot(vis_3, aes(x = reorder(county_rank, -total_child_costs_county), y = total_child_costs_county)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Total Mean of Child Center-based Care by Texas Counties (2008 - 2018)",
+    x = "County Rank",
+    y = "Total Mean Costs ($)"
+  )
+
+```
+
+## Poverty Rates for Families & Person
+
+```{r, echo = FALSE}
+
+# Showing poverty rates for both families & people
+vis_4 <- ndbcc_mod %>%
+  select(
+    StudyYear, poverty_rate_families, poverty_rate_people
+  ) %>%
+  group_by(
+    StudyYear
+  ) %>%
+  mutate(
+    prf_mean = mean(poverty_rate_families),
+    prp_mean = mean(poverty_rate_people)
+  ) %>%
+  ungroup() %>%
+  select(StudyYear, prf_mean, prp_mean) %>%
+  unique() %>%
+  arrange(desc(StudyYear))
+
+vis_4_1 <- ggplot(vis_4, aes(x = StudyYear, y = prf_mean)) +
+  geom_line() +
+  scale_x_continuous(breaks = 2008:2018) +
+  labs(
+    title = "Mean Poverty Rate for Families in United States (2008 - 2018)",
+    x = "Years of Study",
+    y = "Mean Poverty Rate"
+  )
+
+vis_4_2 <- ggplot(vis_4, aes(x = StudyYear, y = prp_mean)) +
+  geom_line() +
+  scale_x_continuous(breaks = 2008:2018) +
+  labs(
+    title = "Mean Poverty Rate for Persons in United States (2008 - 2018)",
+    x = "Years of Study",
+    y = "Mean Poverty Rate"
+  )
+
+# Plotting charts
+vis_4_1 / vis_4_2
+
+```
+
+```{r, echo = FALSE}
+
+# Calculating percent changes
+# Poverty Rates
+per_chg_poverty <- ndbcc_mod %>%
+  select(
+    StudyYear, poverty_rate_families, poverty_rate_people
+  ) %>%
+  group_by(
+    StudyYear
+  ) %>%
+  mutate(
+    prf_mean = mean(poverty_rate_families),
+    prp_mean = mean(poverty_rate_people)
+  ) %>%
+  ungroup() %>%
+  select(StudyYear, prf_mean, prp_mean) %>%
+  unique() %>%
+  arrange(StudyYear) %>%
+  mutate(
+    prf_mean_per_chg = paste0(round(((prf_mean - lag(prf_mean)) / lag(prf_mean)) * 100, 2), "%"),
+    prp_mean_per_chg = paste0(round(((prp_mean - lag(prp_mean)) / lag(prp_mean)) * 100, 2), "%"),
+    prf_mean_per_chg = ifelse(prf_mean_per_chg == "NA%", NA, prf_mean_per_chg),
+    prp_mean_per_chg = ifelse(prp_mean_per_chg == "NA%", NA, prp_mean_per_chg)
+  ) %>%
+  select(1, 4:5)
+
+# Child care costs
+per_chg_costs <- ndbcc_mod %>%
+  group_by(
+    StudyYear
+  ) %>%
+  mutate(
+    mean_pr_infant = mean(median_pr_infant, na.rm = TRUE),
+    mean_pr_toddler = mean(median_pr_toddler, na.rm = TRUE),
+    mean_pr_preschool = mean(median_pr_preschool, na.rm = TRUE)
+  ) %>%
+  ungroup() %>%
+  select(
+    StudyYear,
+    mean_pr_infant,
+    mean_pr_toddler,
+    mean_pr_preschool
+  ) %>%
+  unique() %>%
+  arrange(StudyYear) %>%
+  mutate(
+    mean_pr_infant_per_chg = paste0(round(((mean_pr_infant - lag(mean_pr_infant)) / lag(mean_pr_infant)) * 100, 2), "%"),
+    mean_pr_toddler_per_chg = paste0(round(((mean_pr_toddler - lag(mean_pr_toddler)) / lag(mean_pr_toddler)) * 100, 2), "%"),
+    mean_pr_preschool_per_chg = paste0(round(((mean_pr_preschool - lag(mean_pr_preschool)) / lag(mean_pr_preschool)) * 100, 2), "%"),
+    mean_pr_infant_per_chg = ifelse(mean_pr_infant_per_chg == "NA%", NA, mean_pr_infant_per_chg),
+    mean_pr_toddler_per_chg = ifelse(mean_pr_toddler_per_chg == "NA%", NA, mean_pr_toddler_per_chg),
+    mean_pr_preschool_per_chg = ifelse(mean_pr_preschool_per_chg == "NA%", NA, mean_pr_preschool_per_chg)
+  ) %>%
+  select(1, 5:7)
+
+# Joining data together
+all_per_chg <- left_join(per_chg_poverty, per_chg_costs, c("StudyYear")) %>%
+  rename(
+    `Mean Poverty Rate for Families % Change` = prf_mean_per_chg,
+    `Mean Poverty Rate for Persons % Change` = prp_mean_per_chg,
+    `Mean Price for Infants % Change` = mean_pr_infant_per_chg,
+    `Mean Price for Toddlers % Change` = mean_pr_toddler_per_chg,
+    `Mean Price for Preschool % Change` = mean_pr_preschool_per_chg
+  )
+
+```
