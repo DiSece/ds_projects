@@ -1,0 +1,162 @@
+---
+title: "dice_term_project"
+output: pdf_document
+date: "2023-11-18"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(openxlsx)
+library(stats)
+library(MASS)
+```
+# Introduction
+If you pay attention to the news these days then chances are you have come across headlines regarding some kind of violence being performed in the United States, with some of the more memorable ones involving guns to commit acts of violence. This brings on questions of, “How can we stop this?” and “Who could have seen this coming?” to name a few. If we knew the answer and it was easy to act on, we would have probably ended gun violence by now! However, it is not such an easy question to answer as there are many variables that go into this problem, but we do have the ability to look at any correlations, or other areas of interest, in attempt at trying to spot anything that could help lower gun violence for a few of those variables. Utilizing data science, we can track down and analyze multiple data sets to find any correlation which would be of interest to law enforcement, government, and even everyday citizens to name a few in an effort to lower violence in the most impacted areas.
+
+# Questions to Answer
+1. Are state's aggravated assault incidents correlated with state's amount of firearms registered?
+2. Are state's aggravated assault incidents correlated with state's median household income?
+3. For states with highest amount of aggravated assault incidents are these states in the upper or lower amount for median household income?
+4. For states with highest amount of aggravated assault incidents are these states in the upper or lower amount for firearms registered?
+5. Does a states median household income have any affect on the amount of firearms registered in the state?
+6. Of the states with higher amounts of guns registered are these Republican/Democrat dominant states?
+7. For the states with higher median household income are these Republican/Democrat dominant states?
+8. For the states with higher incidents of aggravated assault are these in the upper regions of population numbers?
+
+# Addressing Problem
+To begin, the data retrieved is the state median income of households, FBI aggravated assault numbers by state, and number of firearms registered by each state. This data is used to find any correlations between states aggravated assault numbers and household income or firearms registered to see if the assaults are driven by household income levels or amount of firearms per state. Using this data to present which states are most in need of assistance and area of focus can be concentrated on other factors that may be contributing to the increased violence levels. 
+# Approach
+The initial approach would be to use linear regression on aggravated assault vs income and aggravated assault vs firearms registered to check correlation and see if there is a negative/positive correlation as well as the strength to assess which variable has the strongest correlation. Depending on the result we can see which areas of focus we should turn to such as poorer states lead to higher increased assaults or if increased firearms lead to more assaults. Being able to focus on a stronger correlated variable that may be attributing to increased assaults could help in being proactive to address potential causes.
+
+# Data
+Data can be found below separated by type and year. Primary data links are:  
+[State Median Income US](https://data.census.gov/)  
+[FBI Aggravated Assault US](https://www.fbi.gov/how-we-can-help-you/more-fbi-services-and-information/ucr/publications)  
+[ATF Firearms US](https://www.atf.gov/resource-center/data-statistics)  
+
+## State Household Median Income Past 12 Months in Inflation Adjusted Dollars
+[State Median Income 2019](https://data.census.gov/table/ACSST1Y2019.S1901?q=INCOME+IN+THE+PAST+12+MONTHS+INFLATION+ADJUSTED+by+state)  
+[State Median Income 2018](https://data.census.gov/table/ACSST1Y2018.S1901?q=INCOME+IN+THE+PAST+12+MONTHS+INFLATION+ADJUSTED+by+state)  
+[State Median Income 2017](https://data.census.gov/table/ACSST1Y2017.S1901?q=INCOME+IN+THE+PAST+12+MONTHS+INFLATION+ADJUSTED+by+state)  
+[State Median Income 2016](https://data.census.gov/table/ACSST1Y2016.S1901?q=INCOME+IN+THE+PAST+12+MONTHS+INFLATION+ADJUSTED+by+state)  
+[State Median Income 2015](https://data.census.gov/table/ACSST1Y2015.S1901?q=INCOME+IN+THE+PAST+12+MONTHS+INFLATION+ADJUSTED+by+state)  
+
+## FBI Aggravated Assault With Firearms Data
+[FBI 2019](https://ucr.fbi.gov/crime-in-the-u.s/2019/crime-in-the-u.s.-2019/topic-pages/tables/table-22)  
+[FBI 2018](https://ucr.fbi.gov/crime-in-the-u.s/2018/crime-in-the-u.s.-2018/topic-pages/tables/table-22)  
+[FBI 2017](https://ucr.fbi.gov/crime-in-the-u.s/2017/crime-in-the-u.s.-2017/topic-pages/tables/table-22)  
+[FBI 2016](https://ucr.fbi.gov/crime-in-the-u.s/2016/crime-in-the-u.s.-2016/topic-pages/tables/table-14)  
+[FBI 2015](https://ucr.fbi.gov/crime-in-the-u.s/2015/crime-in-the-u.s.-2015/tables/table-22)  
+
+## National Firearms Registered
+[National Firearms 2019](https://www.atf.gov/firearms/docs/report/2019-firearms-commerce-report/download) [Exhibit 8]  
+[National Firearms 2018](https://www.atf.gov/file/130436/download) [Exhibit 8]  
+[National Firearms 2017](https://www.atf.gov/file/118216/download) [Exhibit 8]  
+[National Firearms 2016](https://www.atf.gov/file/108316/download) [Exhibit 8]  
+[National Firearms 2015](https://www.atf.gov/file/89561/download) [Exhibit 8]  
+
+# Data Explanation
+## State Median Income Data Explained:
+State median income (inflation adjusted dollars) data for years 2015-2019 has been retrieved. Original data had 209 columns with 19 rows. The amount used is 'Median income (dollars)' to avoid any skew that may be coming from the mean. The type of 'Estimate' is taken from the 'Households' as this is defined as, "A household includes the related family members and all the unrelated people, if any, such as lodgers, foster children, wards, or employees who share the housing unit." (US Census Bureau, 2021). Family and Non family household is chosen to account for everyone who would be living inside a home. The process to clean the data is to remove 'District of Columbia' and 'Puerto Rico' as we are only focusing on the 50 states, add in the appropriate year value, select only the columns we are interested in (Median income for Households), rename columns for clarity, and convert data to long format after combining all the years together into one data set. Data from site is gathered by using public census data and then aggregated. 
+
+## FBI Aggravated Assault Data Explained:
+FBI aggravated assault data for years 2015-2019 has been retrieved. Original data had 8 columns with 51 rows. To clean the data the 'District of Columbia' has been removed, superscripts being present on the state names were removed, appropriate year value added, and column order adjusted before combining to single data set. The state of Iowa was also missing 2018 data (due to lack of data per FBI) so the value was taken by the mean of 2015-2017 and 2019. The data is gathered by the FBI and the known offenses to law enforcement.
+
+## National Firearms Data Explained:
+National Firearms data for years 2015-2019 has been retrieved. Original data had 8 columns with 53 rows. To clean the data the table was exported manually into Excel while removing 'District of Columbia' and 'Other US Territories' and only the 'Total' column has been selected as this represents the total amount of firearms registered by state. The other columns include 'Any Other Weapon', 'Destructive Device', 'Machine gun', 'Silencer', 'Short Barreled Rifle' and 'Short Barreled Shotgun' which are summed into the 'Total' column. The definitions of these columns are located in the actual document itself which explains these as being a type of firearm as it is too large to share here. The data is gathered from firearms that are registered through the states. 
+
+# Packages Required
+Packages to assist in analysis are tidyverse, openxlsx, stats, and MASS.
+
+# Illustrations
+Will need to use linear regression to find which variable is more strongly correlated with aggravated assault, state median household income or number of firearms registered. Will also need to view the R-squared, Adjusted R-squared, and view the Pearson correlation coefficient to assess the fit of the model while also comparing the two models with ANOVA to assess the prediction of the outcome variable. Plots are going to be made to view any outliers along with model sum of squares to asses which model best fits the data.
+
+# Future Steps
+Some data that may help in answering the initial research question would be a political map showing which states are predominantly Republican/Democrat as each political party, and the people that follow, may have certain viewpoints on gun legislation that may lend itself to increase/decrease amount of guns registered in a state. Also, knowing which state has what may be considered "harsher" gun laws may show that aggravated assaults by a firearm may be lower in the harsher gun law states.
+
+# Data Import
+To find data location please refer to the 'Data' section at the beginning of this report. Further explanation of data retrieval and data massaging are below.  
+
+## State Median Income US
+Using years 2015:2019 from the provided data links you can export data to Excel for each year 2015:2019. Once exported data is saved for each year 2015:2019, using R I imported each Excel file to perform same modifications. This involved filtering on 'X1' to "Median income (dollars)" as this is the data we are interested in using, renaming 'X1' to 'YEAR' which will be updated with corresponding year of the collected data (overwriting existing string does not harm output), removed all the columns that start with 'X' as this is default R when file is imported and doesn't have a column name specified and in doing so this gives us just the state names, then non-states are selected which involves removing 'District of Columbia' and 'Puerto Rico', and finally to finish the data was made into long data using pivot_longer and renaming column names from 'name' to 'State' and 'value' to 'House.Income'. Once all this has been completed the data is bound together so all 2015:2019 data is located in single data frame. However, once all the data has been combined I noticed the House.Income had data changed to character, so I removed the ',' and updated column type to numeric matching the other numerical column types from the next two data sets. 
+
+## FBI Aggravated Assault US
+Using years 2015:2019 from the provided data links you can export data to Excel for each year 2015:2019. Once exported data is saved for each year 2015:2019, using R I imported each Excel file to perform same modifications. Due to 'State' column containing superscript numbers I used R to remove these from state names while adding additional column called 'YEAR' for the appropriate year and states with names 'District of Columbia' and 'Puerto Rico' were also removed to focus on the 50 United States. Once these actions have been performed, data has 3 columns selected (YEAR, State, Firearms) and then all bound together so data is in single data frame while also renaming 'Firearms' column to 'Assault.With.Firearms' for clarity.
+
+## ATF Firearms US
+Using years 2015:2019 from the provided data links you can view the data by going to 'Exhibit 8' on each report. To acquire data you need to copy + paste the data into Excel with removing values where 'State' is equal to 'Other US Territories' and 'District of Columbia' as we are just focusing on the 50 United States. The other column that must be selected is 'Total' as this represents total amount of firearms registered in each state. An additional column was created as 'YEAR' to represent the year the data and renamed 'Firearms' to 'Total Firearms' for clarity.
+
+# Data Snapshot
+```{r, echo = FALSE}
+setwd("C:\\Users\\sethd\\OneDrive\\Desktop\\MS in Data Science Bellevue\\Classes\\DSC 520-T301 Statistics for Data Science\\Projects\\Term Project")
+all_data <- read.xlsx("all_data.xlsx") %>%
+  mutate(YEAR = as.factor(YEAR))
+```
+## Data Preview
+```{r, echo = FALSE, comment = NA}
+summary(all_data)
+head(all_data)
+```
+
+# Future Thoughts
+To help acquire data in the future I would like to figure out how to web scrape using R as retrieving the ATF Firearms data would have been a lot easier to scrape with R than to manually export data to Excel by hand. The same could also be applied to the income data and FBI data, but luckily they have provided options to export to Excel which made it significantly easier going that route. Also, I was not readily aware that the column data types are updated automatically via R when importing, so when combining all the data together further modification had to be made to adjust data column types. 
+
+# Not Self-evident
+Reviewing the data we can see that there is a small correlation between Assault.With.Firearms and Total.Firearms (which makes sense, and I plan on seeing how strong the correlation is); however, it's difficult to see if Assault.With.Firearms has any correlation with House.Income. Hoping that from reviewing data correlations there will be evidence showing correlation of Assault.With.Firearms with House.Income and Total.Firearm to have further information on where these assaults typically happen the most. 
+
+# Looking at Data
+To begin looking at the data I plan on identifying the outliers by plotting YEAR with Assault.With.Firearms, Total.Firearms, and House.Income and converting the outliers into z-scores to determine if it's a true outlier. Outliers may be removed as to not skew the data. Once the outliers have been removed we can model Assault.With.Firearms as dependent variable against Total.Firearms and House.Income, and another model of Assault.With.Firearms against both Total.Firearms and House.Income, for linear regression. Once the plots are created, using least-squares we fit a line to the data. Once data has been fit, then R2 would be calculated along with it's p-value to determine significance. We would then compare the models reliability and fit as well as use ANOVA for comparison for which model would be the best to show correlation. From here we would turn to using logistic regression via function glm() on the variables that show highest correlation.
+
+# Slicing and Dicing
+When creating data model we would want to remove the YEAR and State from the input data as these represent the year the data was collected and the corresponding state the data belongs to. This is not necessary when creating a linear/logistic regression model as we're only concerned with the numerical data points and whether they are correlated and can be used to predict future chances of assault happening. 
+
+# Summarizing Data
+To best summarize the data we can use the built-in R functions such as summary() and head() along with creating our own model displaying logistic regression once the most correlated variables have been selected. 
+
+# Plots and Tables
+The different plots to be utilized in helping create the models would be scatterplot, linear regression, multiple regression, and logistic regression. Tables can be created using head() and tail() to show the highs/lows of the data, or a Shiny app can be created allowing user to enter their own information to see the output. 
+
+
+```{r, echo = FALSE, comment = NA}
+assault_income <- lm(all_data$Assault.With.Firearms ~ all_data$House.Income)
+assault_guns <- lm(all_data$Assault.With.Firearms ~ all_data$Total.Firearms)
+# To see if number of firearms is correlated on house income by state
+guns_income <- lm(all_data$Total.Firearms ~ all_data$House.Income)
+```
+
+# Analysis
+When fitting the two data sets, assault with firearms predicted by median household income and assault with firearms predicted by total firearms registered by state, using a linear model we can see the summary below:
+```{r, echo = FALSE, comment = NA}
+summary(assault_income)
+summary(assault_guns)
+```
+When predicting assault with firearms using household income we are seeing a R-squared value of 0.0137 with Pearson coefficient 0.117 showing very small correlation. In contrast to predicting assault with firearms using number of guns registered by state we see R-squared 0.627 and Pearson coefficient .792 showing a very strong correlation.
+
+Viewing the residuals for assault with firearms predicted by number of guns registered we can see that there is more random disbursement around the horizontal axis showing that linear regression model is appropriate for this data; however, when viewing residuals of assault with firearms predicted by household income we see an uneven disbursement of value with more being on the positive side of the graph. This is telling us that a nonlinear model may be more appropriate for this data. This further strengthens the argument that assault with firearms are more strongly correlated with number of guns registered by state rather than using the median household income of a state.
+```{r, echo  = FALSE, comment = NA}
+
+par(mfrow=c(1,2))
+plot(resid(assault_income), xlab = "Assault With Firearms", ylab = "House Income")
+title(main = "Residuals")
+plot(resid(assault_guns), xlab = "Assault With Firearms", ylab = "Number of Guns Registered by State")
+title(main = "Residuals")
+```
+
+# Implications
+The implications from viewing the current data is that there is a higher correlation of assault with firearms with number of guns being registered by state than assault with firearms being correlated with state median household income. A big issue in gun violence per state seems to be more correlated with number of guns in that state rather than based no the median household income of the state. 
+
+# Limitations
+We are limited on the data we choose, but to further help see where gun violence tends to occur most I would want to include other data such as demographic make-up of a state, education by state, and amount of criminals registered by state to see if there are any other factors we could view for further correlation to assault with firearms. We are also only using data going back ~5 years and would need to include more data to increase accuracy of our model. 
+
+# Machine Learning Future
+I do plan on incorporating machine learning techniques such as linear regression to determine the correlation and ensure variables still have strong correlation with each other. Once that has been decided, I plan on using logistic regression in an effort to have a model where we input median income and number of registered firearms for a state and display a chance that there will be aggravated assault with firearm within that state. This can be updated with additional variables/data and ran constantly to help law enforcement/government find states that need assistance with these types of crimes the most.  
+
+# Concluding Remarks
+After review, we can see there is a strong correlation with assault with firearms and number of guns registered by state. This seems to make sense as more guns being registered in a state would put more guns in peoples' hands leading to more opportunities to assault with a firearm. I was surprised to see that there is a very weak correlation between assault with firearms and household median income as I would think that more money available for households would lead to more guns being available in the state and more chances for assaults to occur. I checked on correlation between number of guns registered in a state and the median household income, but even this did not yield what I expected as there was essentially no correlation and I was expecting the higher income states to have more guns registered. This could mean that guns themselves are too cheap to allow all incomes to be able to afford purchasing them, so maybe higher taxes or prices should be made to help lower the amount of guns available to an individual. This is currently a huge and divisive issue in our country and we are going to need more models such as these to help paint a picture of what is leading to increased gun violence in hopes that some change can be made.
+
+# References
+US Census Bureau. (2021, December 16). Subject definitions. Census.gov.  
+  https://www.census.gov/programs-surveys/cps/technical-documentation/subject-definitions.html#:~:text=A%20person%20living%20alone%20in,family%22%20and%20%22nonfamily%22.
+
+
