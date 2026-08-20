@@ -1,0 +1,123 @@
+---
+title: "seth_dice_1.2"
+output:
+pdf_document: default
+word_document: default
+date: "2025-06-08"
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = FALSE}
+# Assignment: 1.2 Assignment
+# Name: Dice, Seth
+# Date: 2025-06-08
+
+suppressMessages(library(ggplot2))
+suppressMessages(library(openxlsx))
+suppressMessages(library(tidyverse))
+suppressMessages(library(lubridate))
+suppressMessages(library(dplyr))
+
+# Set working directory
+setwd("C:\\Users\\sethd\\OneDrive\\Desktop\\MS in Data Science Bellevue\\Classes\\DSC 630-T301 Predictive Analytics\\Week 1")
+
+# Reading in file
+monthly_sales <- read.xlsx("monthly_alc_sales_1992_2025.xlsx", sheet = 2, detectDates = TRUE) %>%
+  # Removing 2025 years as there is only 3 months worth of data
+  filter(observation_date < "2025-01-01")
+```
+
+## Write a summary of your data and identify at least two questions to explore visually with your data.
+
+```
+The data is from Federal Reserve Economic Data for total month sales in millions 
+of dollars for alcohol of merchant wholesalers in the United States. The alcohol
+includes beer, wine, and distilled beverages. The "observation_date"
+represents the month of the alcohol sales and "millions_$" represents the total
+dollar sales in millions. The total timeframe of data is from 1992-2025,
+but due to 2025 only having 3 months this data has been removed. The timeframe
+of alcohol sales is from 1992-2024.
+
+The questions I am wanting to explore with the sales data of alcohol is:
+1) Has there been an increase in alcohol sales amongst the U.S. population?
+2) Which months account for the highest alcohol sales amongst the U.S. population?
+
+```
+
+## Create a histogram or bar graph from your data.
+
+```{r, echo = FALSE}
+# Create a histogram or bar graph from your data.
+## Bar graph is to show the sales from 1992 to 2024
+ggplot(monthly_sales, aes(x = observation_date, y = `millions_$`)) +
+  geom_bar(stat = "identity") +
+  xlab("Month Observed (1992 - 2024)") +
+  ylab("Sales in Millions ($)")
+```
+
+## Create a boxplot from your data.
+
+```{r, echo = FALSE}
+# Creating additional column for years to group by
+monthly_sales_years <- monthly_sales %>%
+  mutate(year_date = str_sub(observation_date, 1, 4),
+         year_date = as.factor(year_date))
+
+ggplot(monthly_sales_years, aes(x = year_date, y = `millions_$`)) +
+  geom_boxplot(notch = FALSE) +
+  xlab("Years Observed") +
+  ylab("Sales in Millions ($)") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+## Create a bivariate plot from your data.
+
+```{r, echo = FALSE}
+# Creating month number to help order by/creating month abbreviation
+monthly_sales_season <- monthly_sales %>%
+  mutate(
+    month_num = month(observation_date)
+  )
+
+# Converting month number to month abbreviation for graph
+monthly_sales_season$month <- as.factor(with(monthly_sales_season, month.abb[month_num]))
+
+# Create a bivariate plot from your data
+ggplot(monthly_sales_season)  + 
+  # Ordering by month_num
+  geom_point(aes(x = fct_reorder(month, month_num), y = `millions_$`)) +
+  xlab("Month") +
+  ylab("Sales in Millions ($)")
+
+```
+
+## Summarize your results and make a conclusion. Explain how you arrived at this conclusion and how your visualizations support your conclusion.
+
+
+```
+Using the histogram and boxplot of data from 1992-2024 we can see an increase
+in the total alcohol sales over the years; however, from 2020 it seems to have peaked
+(possibly Covid) and then started to drop after. I'm curious to see if this trend
+continues and what may be causing the decline in alcohol sales. It could be either
+U.S. is starting to move away from alcohol purchases as people look to decrease their
+alcohol consumption (studies showing alcohol consumption is bad for you and is leading
+to increase number of cancers among younger population), alcohol no longer being as
+afforadable as it once was, or different reasons. 
+
+Before reviewing the data I would have guessed the top 3 months representing the
+highest alcohol sales would be July (4th of July), November (Thanksgiving) and
+December (Christmas/New Years week after). However, reviewing the bivariate plot
+of total sales in millions of dollars by month the top 3 months in number of sales
+in millions of dollars would be December, June, and November. I'm not surprised
+about December and November, but I am surprised to see June. I'm guessing that June
+is when people are loading up on alcohol to prepare for the 4th of July. Another
+surprise is January and February being so low compared to the other months, but
+this could be due to the holiday runs of November and December with people wanting
+to save money... and get over their hangovers.
+
+```
+
+
