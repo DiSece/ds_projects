@@ -1,0 +1,253 @@
+---
+title: "seth_dice_milestone_5"
+author: "Seth Dice"
+date: "2025-08-10"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r, echo = FALSE}
+
+options(warn = -1)
+
+# Assignment: Milestone 5
+# Name: Dice, Seth
+# Date: 2025-08-10
+
+suppressMessages(library(ggplot2))
+suppressMessages(library(openxlsx))
+suppressMessages(library(tidyverse))
+suppressMessages(library(lubridate))
+suppressMessages(library(recommenderlab))
+suppressMessages(library(naniar))
+suppressMessages(library(nnet))
+suppressMessages(library(caret))
+
+# Set working directory of data
+setwd("C:\\Users\\sethd\\OneDrive\\Desktop\\MS in Data Science Bellevue\\Classes\\DSC 630-T301 Predictive Analytics\\Milestone\\5")
+
+```
+
+# Data Import
+
+Importing Diabetes data from Excel spreadsheet and reviewing data with head() confirming data has been imported before creating target and feature dataframes.
+
+```{r, echo = FALSE}
+
+# Import diabetes health data
+dia_file <- read.csv("diabetes_012_health_indicators_BRFSS2015.csv")
+
+# Change into singular dataframe for use
+df <- dia_file %>%
+  mutate(Diabetes_012 = as.factor(Diabetes_012))
+
+head(df)
+
+df_target <- df %>% select(Diabetes_012)
+
+df_features <- df %>% select(-Diabetes_012)
+
+```
+
+# Data Review
+
+Confirming that data is candidate for Multinomial Logistic Regression model
+
+```{r, echo = FALSE}
+
+# Confirming Diabetes_012 has three or more categories
+paste0("The factor summary of Diabetes_012 is:") 
+summary.factor(df_target)
+
+```
+
+The Diabetes_012 represents the target variable and is made up of three different categories
+
+```{r, echo = FALSE}
+
+# Listing data types of data without target variable
+paste0("The structure of feature variables are:") 
+str(df_features)
+
+```
+
+The feature variables are integers and considered continuous/categorical datatypes
+
+Summary factor information was taken for all the feature variables as well but too large to post.
+
+# Data Visuals
+
+```{r, echo = FALSE}
+# Quick way to visually review dataframe to ensure no rows have missing values
+# Using gg_miss_var function to review missing values of dataframe while
+# showing results
+
+gg_miss_var(df_features, show_pct = TRUE) +
+  labs(x = "Feature Variable", y = "Missing Proportion")
+```
+
+Confirming that there are no missing feature variable values by checking missing proportion which is showing 0.00 for all.
+
+```{r, echo = FALSE}
+
+# Show imbalance of target variable via bar chart
+# Renaming target variables to values being measured
+# Adding count of values
+df_target_names <- df_target %>%
+  group_by(Diabetes_012) %>%
+  mutate(
+    Diabetes_012 = case_when(
+      Diabetes_012 == 0 ~ "No Diabetes/Only Pregnancy",
+      Diabetes_012 == 1 ~ "Prediabetes",
+      TRUE ~ "Has Diabetes"
+    ),
+    num_cnt = n()
+  ) %>%
+  ungroup() %>%
+  unique() %>%
+  rename("Participant Result" = Diabetes_012)
+
+df_target_names
+
+```
+
+Confirming dataset is imbalanced with target variable being dominated by "No Diabetes/Only Pregnancy"
+
+```{r, echo = FALSE}
+
+# Plotting bar chart of data imbalance
+ggplot(df_target_names, aes(x = reorder(`Participant Result`, -num_cnt),
+                            y = num_cnt, fill = `Participant Result`)) +
+  geom_bar(stat = "identity") +
+  xlab("Participant Result") +
+  ylab("Number of Participants") +
+  theme(axis.text.x = element_text(size = 6))
+
+```
+
+Bar chart visually displaying the data imbalance of target variable.
+
+# Model Building
+
+Splitting data into training/test and displaying head().
+
+```{r, echo = FALSE}
+
+###### Creating data partition to separate data into train/test
+df_index <- createDataPartition(df$Diabetes_012, p = .80, list = FALSE)
+train <- df[df_index, ]
+test <- df[-df_index, ]
+
+paste0("Training dataset:")
+head(train)
+
+paste0("Testing dataset:")
+head(test)
+
+###### Setting the reference level to 0 for no diabetes
+train$Diabetes_012 <- relevel(train$Diabetes_012, ref = "0")
+
+```
+
+Training multinomial model and displaying summary.
+
+```{r, echo = FALSE}
+
+###### Training the multinomial model
+multinom_model <- multinom(Diabetes_012 ~ ., data = df)
+###### Checking the model
+summary(multinom_model)
+
+####### Converting coefficients to odds by taking exponential of coefficients
+odds_ratio = exp(coef(multinom_model))
+odds_ratio
+
+```
+
+Coefficients have been converted to odds by taking exponential of the coefficients.
+
+# Model Validation
+
+```{r, echo = FALSE}
+
+# Creating function to review p-values with TRUE showing p-values > 0.05
+# and FALSE for p-values < 0.05
+p_value_t_f <- function(x){
+  zWald_modelo <- (summary(x)$coefficients / 
+                                summary(x)$standard.errors)
+  a <- t(apply(zWald_modelo, 1, function(x) {x < qnorm(0.025, lower.tail = FALSE)} ))
+  b <- t(apply(zWald_modelo, 1, function(x) {x > -qnorm(0.025, lower.tail = FALSE)} ))
+  ifelse(a == TRUE & b == TRUE, TRUE, FALSE)
+}
+
+# Predicting the values for train dataset
+train$ClassPredicted <- predict(multinom_model, newdata = train, "class")
+# Building classification table
+tab <- table(train$Class, train$ClassPredicted)
+# Calculating accuracy - sum of diagonal elements divided by total obs
+tab_round <- round((sum(diag(tab))/sum(tab))*100,2)
+
+```
+
+The p-value confirmation where TRUE are for p-values > 0.05 and FALSE for p-values < 0.05
+
+```{r, echo = FALSE}
+
+p_value_t_f(multinom_model)
+
+```
+
+The target variables predicted are:
+
+```{r, echo = FALSE}
+
+tab
+
+```
+
+Confirming that target variables in dataset were all predicted:
+
+```{r, echo = FALSE}
+
+paste0("The percentage of target variables predicted for training dataset are: ", tab_round)
+
+### Predicting the class on test data
+# Predicting the class for test dataset
+test$ClassPredicted <- predict(multinom_model, newdata = test, "class")
+# Building classification table
+tab <- table(test$Class, test$ClassPredicted)
+# Calculating accuracy - sum of diagonal elements divided by total obs
+tab_round <- round((sum(diag(tab))/sum(tab))*100,2)
+
+```
+
+Running the same predictions on test dataset we can see all the target variables have been predicted as well:
+
+```{r, echo = FALSE}
+
+tab
+
+paste0("The percentage of target variables predicted for test dataset are: ", tab_round)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
